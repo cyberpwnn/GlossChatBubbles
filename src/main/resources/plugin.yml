@@ -2,3 +2,7 @@ name: ${project.name}
 version: ${project.version}
 main: com.volmit.gloss.chatbubbles.GlossChatBubbles
 depend: [Gloss]
+permissions:
+  gloss.chatbubbles.allow:
+    description: Gives access display chat bubbles
+    default: op
