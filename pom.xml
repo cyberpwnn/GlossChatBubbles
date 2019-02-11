@@ -37,10 +37,11 @@
 					</execution>
 				</executions>
 				<configuration>
+					<minimizeJar>true</minimizeJar>
 					<relocations>
 						<relocation>
-							<pattern>com.volmit.volume</pattern>
-							<shadedPattern>com.volmit.gloss.chatbubbles.volume</shadedPattern>
+							<pattern>primal</pattern>
+							<shadedPattern>com.volmit.gloss.chatbubbles.primal</shadedPattern>
 						</relocation>
 					</relocations>
 				</configuration>
@@ -66,13 +67,13 @@
 		</dependency>
 		<dependency>
 			<groupId>com.volmit</groupId>
-			<artifactId>VolumePlugin</artifactId>
-			<version>1.1</version>
+			<artifactId>Primal</artifactId>
+			<version>1.0.17</version>
 		</dependency>
 		<dependency>
 			<groupId>com.volmit</groupId>
 			<artifactId>GlossAPI</artifactId>
-			<version>1.0</version>
+			<version>1.0.7</version>
 		</dependency>
 	</dependencies>
 </project>

@@ -10,24 +10,21 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import com.volmit.gloss.api.GLOSS;
 import com.volmit.gloss.api.intent.TemporaryDescriptor;
-import com.volmit.volume.bukkit.VolumePlugin;
-import com.volmit.volume.bukkit.command.CommandTag;
-import com.volmit.volume.bukkit.pawn.Async;
-import com.volmit.volume.bukkit.pawn.Start;
-import com.volmit.volume.bukkit.task.A;
-import com.volmit.volume.bukkit.util.data.Edgy;
-import com.volmit.volume.lang.format.F;
-import com.volmit.volume.math.M;
 
-@CommandTag("&8[&5GCB&8]:&7 ")
-public class GlossChatBubbles extends VolumePlugin
+import primal.bukkit.config.Configurator;
+import primal.bukkit.plugin.PrimalPlugin;
+import primal.bukkit.sched.A;
+import primal.compute.math.M;
+import primal.logic.format.F;
+
+public class GlossChatBubbles extends PrimalPlugin
 {
-	@Start
-	public void loadConf()
+	@Override
+	public void start()
 	{
 		try
 		{
-			Config.read();
+			Configurator.BUKKIT.read(Config.class, GLOSS.getConfigLocation(instance));
 		}
 
 		catch(Exception e)
@@ -37,7 +34,6 @@ public class GlossChatBubbles extends VolumePlugin
 		}
 	}
 
-	@Async
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void on(AsyncPlayerChatEvent e)
 	{
@@ -57,8 +53,6 @@ public class GlossChatBubbles extends VolumePlugin
 		}
 	}
 
-	@Edgy
-	@Async
 	private void bubble(String msg, Player p)
 	{
 		Location l = p.getEyeLocation().clone().add(0, 1, 0);
@@ -81,7 +75,6 @@ public class GlossChatBubbles extends VolumePlugin
 		});
 
 		d.setLocation(p.getEyeLocation());
-
 		GLOSS.getContextLibrary().getView(p).setTrackedBubbles(GLOSS.getContextLibrary().getView(p).getTrackedBubbles() + 1);
 
 		new A(Config.messageDisplayTicks)
@@ -94,5 +87,17 @@ public class GlossChatBubbles extends VolumePlugin
 		};
 
 		GLOSS.getSourceLibrary().register(d);
+	}
+
+	@Override
+	public void stop()
+	{
+
+	}
+
+	@Override
+	public String getTag(String subTag)
+	{
+		return "";
 	}
 }
