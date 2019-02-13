@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import com.volmit.gloss.api.GLOSS;
@@ -17,14 +18,16 @@ import primal.bukkit.sched.A;
 import primal.compute.math.M;
 import primal.logic.format.F;
 
-public class GlossChatBubbles extends PrimalPlugin
+public class GlossChatBubbles extends PrimalPlugin implements Listener
 {
 	@Override
 	public void start()
 	{
+		registerListener(this);
+
 		try
 		{
-			Configurator.BUKKIT.read(Config.class, GLOSS.getConfigLocation(instance));
+			Configurator.BUKKIT.load(Config.class, GLOSS.getConfigLocation(this));
 		}
 
 		catch(Exception e)

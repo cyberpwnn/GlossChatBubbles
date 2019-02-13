@@ -4,7 +4,7 @@
   <groupId>com.volmit</groupId>
   <artifactId>GlossChatBubbles</artifactId>
   <name>GlossChatBubbles</name>
-  <version>1.0</version>
+  <version>1.1</version>
   <build>
     <resources>
       <resource>
@@ -30,10 +30,11 @@
           </execution>
         </executions>
         <configuration>
+          <minimizeJar>true</minimizeJar>
           <relocations>
             <relocation>
-              <pattern>com.volmit.volume</pattern>
-              <shadedPattern>com.volmit.gloss.chatbubbles.volume</shadedPattern>
+              <pattern>primal</pattern>
+              <shadedPattern>com.volmit.gloss.chatbubbles.primal</shadedPattern>
             </relocation>
           </relocations>
         </configuration>
