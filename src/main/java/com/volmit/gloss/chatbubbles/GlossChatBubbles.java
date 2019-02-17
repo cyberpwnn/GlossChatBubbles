@@ -61,6 +61,7 @@ public class GlossChatBubbles extends PrimalPlugin implements Listener
 		Location l = p.getEyeLocation().clone().add(0, 1, 0);
 		TemporaryDescriptor d = GLOSS.getSourceLibrary().createTemporaryDescriptor("chat-" + p.getUniqueId() + "-" + M.ms() + UUID.randomUUID().toString(), l, Config.messageBubbleMaxTimeAlive);
 		d.addLine("&s&7" + msg);
+		d.setEmissiveLevel(0);
 		int trk = GLOSS.getContextLibrary().getView(p).getTrackedBubbles();
 
 		d.bindPosition(() ->
