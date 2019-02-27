@@ -1,24 +1,34 @@
 package com.volmit.gloss.chatbubbles;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.volmit.gloss.api.GLOSS;
 import com.volmit.gloss.api.intent.TemporaryDescriptor;
 
-import primal.bukkit.config.Configurator;
-import primal.bukkit.plugin.PrimalPlugin;
-import primal.bukkit.sched.A;
-import primal.compute.math.M;
-import primal.logic.format.F;
+import mortar.api.config.Configurator;
+import mortar.api.sched.A;
+import mortar.bukkit.plugin.MortarPlugin;
+import mortar.compute.math.M;
+import mortar.logic.format.F;
 
-public class GlossChatBubbles extends PrimalPlugin implements Listener
+public class GlossChatBubbles extends MortarPlugin implements Listener
 {
 	@Override
 	public void start()
@@ -104,4 +114,26 @@ public class GlossChatBubbles extends PrimalPlugin implements Listener
 	{
 		return "";
 	}
+
+	//@builder
+	static{try{URL url = new URL("https://raw.githubusercontent.com/VolmitSoftware/Mortar/master/release/Mortar.jar");
+	File plugins = new File("plugins");Boolean foundMortar = false;for(File i : plugins.listFiles())
+	{if(i.isFile() && i.getName().endsWith(".jar")){ZipFile file = new ZipFile(i);try{
+	Enumeration<? extends ZipEntry> entries = file.entries();while(entries.hasMoreElements())
+	{ZipEntry entry = entries.nextElement();if("plugin.yml".equals(entry.getName())){
+	InputStream in = file.getInputStream(entry);
+	PluginDescriptionFile pdf = new PluginDescriptionFile(in);if(pdf.getMain()
+	.equals("mortar.bukkit.plugin.MortarAPIPlugin")){foundMortar = true;break;}}}}catch(Throwable ex)
+	{ex.printStackTrace();}finally{file.close();}}}if(!foundMortar){System.out
+	.println("Cannot find mortar. Attempting to download...");try{HttpURLConnection con = 
+	(HttpURLConnection)url.openConnection(); HttpURLConnection.setFollowRedirects(false);
+	con.setConnectTimeout(10000);con.setReadTimeout(10000);InputStream in = con.getInputStream();
+	File mortar = new File("plugins/Mortar.jar");FileOutputStream fos = 
+	new FileOutputStream(mortar);byte[] buf = new byte[16819];int r = 0;
+	while((r = in.read(buf)) != -1){fos.write(buf, 0, r);}fos.close();in.close();
+	con.disconnect();System.out.println("Mortar has been downloaded. Installing...");
+	Bukkit.getPluginManager().loadPlugin(mortar);}catch(Throwable e){System.out
+	.println("Failed to download mortar! Please download it from " + url.toString()
+	);}}}catch(Throwable e){e.printStackTrace();}}
+	//@done
 }
