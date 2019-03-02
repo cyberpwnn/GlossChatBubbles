@@ -86,12 +86,12 @@
 		<dependency>
 			<groupId>com.volmit</groupId>
 			<artifactId>Mortar</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.volmit</groupId>
 			<artifactId>GlossAPI</artifactId>
-			<version>1.0.14</version>
+			<version>1.0.18</version>
 		</dependency>
 	</dependencies>
 </project>
