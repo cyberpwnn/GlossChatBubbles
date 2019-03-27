@@ -1,43 +1,44 @@
 package com.volmit.gloss.chatbubbles;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.volmit.gloss.api.GLOSS;
+import com.volmit.gloss.api.intent.ListMode;
 import com.volmit.gloss.api.intent.TemporaryDescriptor;
 
 import mortar.api.config.Configurator;
 import mortar.api.sched.A;
+import mortar.api.sched.J;
 import mortar.bukkit.plugin.MortarPlugin;
 import mortar.compute.math.M;
+import mortar.lang.collection.GList;
+import mortar.lang.collection.GMap;
+import mortar.lang.collection.GSet;
 import mortar.logic.format.F;
 
 public class GlossChatBubbles extends MortarPlugin implements Listener
 {
+	private GMap<Player, GList<String>> messages;
+	private GMap<Player, String> justSent;
+
 	@Override
 	public void start()
 	{
 		registerListener(this);
+		messages = new GMap<>();
+		justSent = new GMap<>();
 
 		try
 		{
-			Configurator.BUKKIT.load(Config.class, GLOSS.getConfigLocation(this));
+			Configurator.BUKKIT.load(Config.class, getDataFile("config.yml"));
 		}
 
 		catch(Exception e)
@@ -47,12 +48,31 @@ public class GlossChatBubbles extends MortarPlugin implements Listener
 		}
 	}
 
-	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+	@EventHandler
+	public void on(PlayerQuitEvent e)
+	{
+		messages.remove(e.getPlayer());
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void on(AsyncPlayerChatEvent e)
 	{
+		if(e.isCancelled())
+		{
+			return;
+		}
+
+		if(justSent.containsKey(e.getPlayer()) && justSent.get(e.getPlayer()).equals(e.getMessage()))
+		{
+			return;
+		}
+
+		justSent.put(e.getPlayer(), e.getMessage());
+		J.a(() -> justSent.remove(e.getPlayer()));
+
 		int m = 0;
 
-		for(String i : F.wrapWords(e.getMessage(), Config.wordWrapThreshold).split("\n"))
+		for(String i : new GSet<>(new GList<>(F.wrapWords(e.getMessage(), Config.wordWrapThreshold).split("\n"))))
 		{
 			new A(5 * m)
 			{
@@ -68,16 +88,32 @@ public class GlossChatBubbles extends MortarPlugin implements Listener
 
 	private void bubble(String msg, Player p)
 	{
-		Location l = p.getEyeLocation().clone().add(0, 1, 0);
+		if(getTracked(p).contains(msg))
+		{
+			untrack(p, msg);
+			track(p, msg);
+			return;
+		}
+
+		Location l = p.getEyeLocation().clone().add(Config.offsetX, Config.offsetY, Config.offsetZ);
 		TemporaryDescriptor d = GLOSS.getSourceLibrary().createTemporaryDescriptor("chat-" + p.getUniqueId() + "-" + M.ms() + UUID.randomUUID().toString(), l, Config.messageBubbleMaxTimeAlive);
-		d.addLine("&s&7" + msg);
-		d.setEmissiveLevel(0);
-		int trk = GLOSS.getContextLibrary().getView(p).getTrackedBubbles();
+		d.getPlayerList().clear();
+		d.getPlayerList().setMode(ListMode.BLACKLIST);
+
+		if(Config.hideOwn)
+		{
+			d.getPlayerList().add(p.getUniqueId());
+		}
+
+		d.clearLines();
+		d.addLine(Config.prefix + msg);
+
+		track(p, msg);
 
 		d.bindPosition(() ->
 		{
-			int size = GLOSS.getContextLibrary().getView(p).getTrackedBubbles();
-			int index = trk;
+			int size = getTrackedIndex(p, msg);
+			int index = getTracked(p).size();
 			double h = GLOSS.getIntentLibrary().getStackSpread() * ((size + index));
 			double g = GLOSS.getIntentLibrary().getStackSpread() * (index);
 			double m = size * GLOSS.getIntentLibrary().getStackSpread();
@@ -89,18 +125,55 @@ public class GlossChatBubbles extends MortarPlugin implements Listener
 		});
 
 		d.setLocation(p.getEyeLocation());
-		GLOSS.getContextLibrary().getView(p).setTrackedBubbles(GLOSS.getContextLibrary().getView(p).getTrackedBubbles() + 1);
 
 		new A(Config.messageDisplayTicks)
 		{
 			@Override
 			public void run()
 			{
-				GLOSS.getContextLibrary().getView(p).setTrackedBubbles(GLOSS.getContextLibrary().getView(p).getTrackedBubbles() - 1);
+				untrack(p, msg);
 			}
 		};
 
 		GLOSS.getSourceLibrary().register(d);
+	}
+
+	private GList<String> getTracked(Player p)
+	{
+		return messages.containsKey(p) ? messages.get(p) : new GList<>();
+	}
+
+	private int getTrackedIndex(Player p, String f)
+	{
+		return getTracked(p).indexOf(f);
+	}
+
+	private void track(Player p, String message)
+	{
+		if(!messages.containsKey(p))
+		{
+			messages.put(p, new GList<>());
+		}
+
+		try
+		{
+			messages.get(p).add(message);
+		}
+
+		catch(Throwable e)
+		{
+
+		}
+	}
+
+	private void untrack(Player p, String message)
+	{
+		if(!messages.containsKey(p))
+		{
+			return;
+		}
+
+		messages.get(p).remove(message);
 	}
 
 	@Override
@@ -113,81 +186,5 @@ public class GlossChatBubbles extends MortarPlugin implements Listener
 	public String getTag(String subTag)
 	{
 		return "";
-	}
-
-	static
-	{
-		try
-		{
-			URL url = new URL("https://raw.githubusercontent.com/VolmitSoftware/Mortar/master/release/Mortar.jar");
-			File plugins = new File("plugins");
-			Boolean foundMortar = false;
-			for(File i : plugins.listFiles())
-			{
-				if(i.isFile() && i.getName().endsWith(".jar"))
-				{
-					ZipFile file = new ZipFile(i);
-					try
-					{
-						Enumeration<? extends ZipEntry> entries = file.entries();
-						while(entries.hasMoreElements())
-						{
-							ZipEntry entry = entries.nextElement();
-							if("plugin.yml".equals(entry.getName()))
-							{
-								InputStream in = file.getInputStream(entry);
-								PluginDescriptionFile pdf = new PluginDescriptionFile(in);
-								if(pdf.getMain().equals("mortar.bukkit.plugin.MortarAPIPlugin"))
-								{
-									foundMortar = true;
-									break;
-								}
-							}
-						}
-					}
-					catch(Throwable ex)
-					{
-						ex.printStackTrace();
-					}
-					finally
-					{
-						file.close();
-					}
-				}
-			}
-			if(!foundMortar)
-			{
-				System.out.println("Cannot find mortar. Attempting to download...");
-				try
-				{
-					HttpURLConnection con = (HttpURLConnection) url.openConnection();
-					HttpURLConnection.setFollowRedirects(false);
-					con.setConnectTimeout(10000);
-					con.setReadTimeout(10000);
-					InputStream in = con.getInputStream();
-					File mortar = new File("plugins/Mortar.jar");
-					FileOutputStream fos = new FileOutputStream(mortar);
-					byte[] buf = new byte[16819];
-					int r = 0;
-					while((r = in.read(buf)) != -1)
-					{
-						fos.write(buf, 0, r);
-					}
-					fos.close();
-					in.close();
-					con.disconnect();
-					System.out.println("Mortar has been downloaded. Installing...");
-					Bukkit.getPluginManager().loadPlugin(mortar);
-				}
-				catch(Throwable e)
-				{
-					System.out.println("Failed to download mortar! Please download it from " + url.toString());
-				}
-			}
-		}
-		catch(Throwable e)
-		{
-			e.printStackTrace();
-		}
 	}
 }
