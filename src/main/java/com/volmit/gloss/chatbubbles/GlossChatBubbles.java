@@ -58,7 +58,7 @@ public class GlossChatBubbles extends MortarPlugin implements Listener
 	public void on(AsyncPlayerChatEvent e)
 	{
 		if(e.isCancelled() || Config.blacklist.contains(e.getPlayer().getLocation().getWorld().getName()) ||
-					!e.getPlayer().hasPermission("gloss.chatbubbles.use"))
+					!e.getPlayer().hasPermission("gloss.chatbubbles.allow"))
 		{
 			return;
 		}
