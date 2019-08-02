@@ -2,6 +2,8 @@ package com.volmit.gloss.chatbubbles;
 
 import mortar.api.config.Key;
 
+import java.util.ArrayList;
+
 public class Config
 {
 	@Key("chat-bubbles.follow-players")
@@ -33,4 +35,11 @@ public class Config
 
 	@Key("chat-bubbles.message.offset.z")
 	public static double offsetZ = 0;
+
+	@Key("chat-bubbles.blacklist-worlds")
+	public static ArrayList<String> blacklist = new ArrayList<String>() {{
+		add("world_the_end");
+		add("admin_world");
+		add("pvp_zone");
+	}};
 }
