@@ -57,7 +57,8 @@ public class GlossChatBubbles extends MortarPlugin implements Listener
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void on(AsyncPlayerChatEvent e)
 	{
-		if(e.isCancelled() || Config.blacklist.contains(e.getPlayer().getLocation().getWorld().getName()))
+		if(e.isCancelled() || Config.blacklist.contains(e.getPlayer().getLocation().getWorld().getName()) ||
+					!e.getPlayer().hasPermission("gloss.chatbubbles.use"))
 		{
 			return;
 		}
